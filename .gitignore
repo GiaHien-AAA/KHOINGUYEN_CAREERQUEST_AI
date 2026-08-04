@@ -1,0 +1,16 @@
+# Secrets
+server/.env
+
+# Dependencies and build output
+client/node_modules/
+client/dist/
+server/node_modules/
+
+# Logs and editor files
+*.log
+.DS_Store
+.vscode/
+.idea/
+client/.env
+client/.env.local
+server/.env.local

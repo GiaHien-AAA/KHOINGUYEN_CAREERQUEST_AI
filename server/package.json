@@ -1,0 +1,20 @@
+{
+  "name": "career-quest-ai-server",
+  "version": "1.0.0",
+  "description": "Backend API for Career Quest AI",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "check": "node --check src/server.js && node --check src/config/database.js && node --check src/middleware/authMiddleware.js && node --check src/controllers/authController.js && node --check src/controllers/accountController.js && node --check src/controllers/evaluationController.js && node --check src/controllers/roleplayController.js && node --check src/routes/authRoutes.js && node --check src/routes/accountRoutes.js && node --check src/routes/evaluationRoutes.js && node --check src/routes/roleplayRoutes.js && node --check src/services/authService.js && node --check src/services/sessionService.js && node --check src/services/careerCatalogService.js && node --check src/services/aiEvaluationService.js && node --check src/services/aiRoleplayService.js && node --check src/services/geminiEvaluationService.js && node --check src/services/geminiRoleplayService.js && node --check src/services/mockAiService.js && node --check src/services/mockRoleplayService.js && node --check src/services/roleplayPrompt.js && node --check src/services/evaluationPrompt.js && node --check src/services/roleplayScenarioData.js"
+  },
+  "dependencies": {
+    "@google/genai": "^2.10.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^5.1.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "mysql2": "^3.15.0"
+  }
+}
