@@ -97,7 +97,7 @@ function normalizeScenarioOverride(value, baseScenario) {
   const stageNumber = Math.max(1, Number(value.stageNumber) || baseScenario.stageNumber || 1);
   const maxConversationTurns = Math.max(
     1,
-    Math.min(4, Number(value.maxConversationTurns) || baseScenario.maxConversationTurns || 2),
+    Math.min(6, Number(value.maxConversationTurns) || baseScenario.maxConversationTurns || 3),
   );
 
   return {

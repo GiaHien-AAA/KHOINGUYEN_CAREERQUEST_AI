@@ -106,7 +106,7 @@ export function RegisterPage({ onBack, onGoLogin, onRegisterSuccess }: RegisterP
           </p>
 
           <div className="mt-6 grid gap-4 md:grid-cols-2">
-            <FormField label="TÊN" value={fullName} placeholder="Phan Gia Hiển" type="text" onChange={(value) => { setFullName(value); setErrorMessage(''); }} />
+            <FormField label="TÊN" value={fullName} placeholder="Nguyen Van A" type="text" onChange={(value) => { setFullName(value); setErrorMessage(''); }} />
             <FormField label="EMAIL" value={email} placeholder="player@gmail.com" type="email" onChange={(value) => { setEmail(value); setErrorMessage(''); }} />
           </div>
 

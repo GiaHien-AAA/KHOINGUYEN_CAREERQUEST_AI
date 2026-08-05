@@ -22,23 +22,11 @@ async function createRoleplayIntro(input) {
   if (provider === 'gemini') {
     try {
       const result = await createRoleplayIntroWithGemini(input);
-
-      console.log('[ROLEPLAY:INTRO] Gemini success', {
-        stageId: input.stageId,
-        source: result.source,
-      });
-
-      return {
-        ...result,
-        source: 'gemini',
-      };
+      console.log('[ROLEPLAY:INTRO] Gemini success', { stageId: input.stageId });
+      return { ...result, source: 'gemini' };
     } catch (error) {
       console.error('[ROLEPLAY:GEMINI] Intro failed:', safeError(error));
-
-      if (strict) {
-        throw createAiUnavailableError(error);
-      }
-
+      if (strict) throw createAiUnavailableError(error);
       console.warn('[ROLEPLAY] Falling back to mock intro.');
     }
   }
@@ -58,28 +46,21 @@ async function createRoleplayTurn(input) {
     hasGeminiKey: hasGeminiKey(),
     stageId: input.stageId,
     eventType: input.eventType,
+    turnNumber: input.turnNumber,
   });
 
   if (provider === 'gemini') {
     try {
       const result = await createRoleplayTurnWithGemini(input);
-
       console.log('[ROLEPLAY:TURN] Gemini success', {
         stageId: input.stageId,
-        source: result.source,
+        shouldContinue: result.shouldContinue,
+        stageComplete: result.stageComplete,
       });
-
-      return {
-        ...result,
-        source: 'gemini',
-      };
+      return { ...result, source: 'gemini' };
     } catch (error) {
       console.error('[ROLEPLAY:GEMINI] Turn failed:', safeError(error));
-
-      if (strict) {
-        throw createAiUnavailableError(error);
-      }
-
+      if (strict) throw createAiUnavailableError(error);
       console.warn('[ROLEPLAY] Falling back to mock turn.');
     }
   }
@@ -90,11 +71,7 @@ async function createRoleplayTurn(input) {
 
 function getProvider() {
   const provider = String(process.env.AI_PROVIDER || 'mock').trim().toLowerCase();
-
-  if (provider === 'gemini' && hasGeminiKey()) {
-    return 'gemini';
-  }
-
+  if (provider === 'gemini' && hasGeminiKey()) return 'gemini';
   return 'mock';
 }
 
@@ -107,14 +84,10 @@ function isStrictAi() {
 }
 
 function createAiUnavailableError(error) {
-  const nextError = new Error(
-    'Gemini đang lỗi hoặc chưa kết nối được. Hệ thống đã chặn fallback mock để kiểm tra AI thật.',
-  );
-
+  const nextError = new Error('Gemini đang lỗi hoặc chưa kết nối được. Hệ thống đã chặn fallback mock để kiểm tra AI thật.');
   nextError.statusCode = 503;
   nextError.code = 'GEMINI_UNAVAILABLE';
   nextError.cause = error;
-
   return nextError;
 }
 
@@ -122,7 +95,6 @@ function safeError(error) {
   if (error instanceof Error) {
     return `${error.name}: ${error.message}`;
   }
-
   return String(error || 'Unknown error');
 }
 

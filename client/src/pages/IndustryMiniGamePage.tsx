@@ -405,7 +405,7 @@ export function IndustryMiniGamePage({
     setIsSending(true);
     setDraft('');
 
-    const evidenceForAI = taskResult ? `\n\n[Kết quả mini game: ${taskResult.score}/100. ${taskResult.summary}]` : '';
+    const evidenceForAI = taskResult ? `\n\nDữ kiện nhiệm vụ vừa làm để nhân vật hiểu bối cảnh: điểm ${taskResult.score}/100. ${taskResult.summary}` : '';
     const messageForAI = `${answerText}${evidenceForAI}`;
     const nextStageMessages = [...stagePlayerMessages, answerText];
     const elapsed = Math.max(4, Math.round((Date.now() - stageStartedAtRef.current) / 1000));
@@ -463,7 +463,7 @@ export function IndustryMiniGamePage({
         },
       ]);
 
-      const mustComplete = reply.stageComplete || !reply.shouldContinue || turnNumber >= 2;
+      const mustComplete = reply.stageComplete || !reply.shouldContinue || turnNumber >= 4;
       if (mustComplete) {
         const roleplayScore = scoreIndustryAnswer(stage, `${nextStageMessages.join(' ')} ${taskResult?.summary || ''}`);
         const stageScore = Math.round(roleplayScore * 0.45 + (taskResult?.score || 60) * 0.55);
@@ -540,7 +540,7 @@ export function IndustryMiniGamePage({
               <CharacterPortrait actor={actor} mood={activeTone} isThinking={isLoadingIntro} size="hero" />
             </div>
             <div className="flex min-h-[420px] flex-col justify-center">
-              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#8be9fd]">Người hướng dẫn</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#8be9fd]">Nhân vật giao ca</p>
               <h2 className="mt-2 text-3xl font-black text-[#ffe066]">{actor.name}</h2>
               <p className="mt-1 text-sm font-bold text-[#9fa8d8]">{actor.role}</p>
 
@@ -553,7 +553,7 @@ export function IndustryMiniGamePage({
               </div>
 
               <div className="mt-5 rounded-3xl border border-white/10 bg-white/5 p-4">
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#63e6a8]">Công việc</p>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[#63e6a8]">Mini game tiếp theo</p>
                 <p className="mt-2 text-xl font-black text-white">{stage.task.title}</p>
                 <p className="mt-1 text-sm font-semibold leading-6 text-[#cbd5ff]">{compactText(stage.task.brief, 110)}</p>
               </div>
@@ -687,7 +687,7 @@ export function IndustryMiniGamePage({
 function buildScenarioOverride(stage: IndustryRoleplayStage): RoleplayScenarioOverride {
   const syncedContext = [
     stage.context,
-    `Mini game: ${stage.task.title}.`,
+    `Nhiệm vụ nghề nghiệp vừa làm: ${stage.task.title}.`,
     stage.task.brief,
   ]
     .filter(Boolean)
@@ -701,7 +701,7 @@ function buildScenarioOverride(stage: IndustryRoleplayStage): RoleplayScenarioOv
     context: syncedContext,
     initialQuestion: stage.playerGoal,
     mode: 'open',
-    maxConversationTurns: 2,
+    maxConversationTurns: 4,
   };
 }
 

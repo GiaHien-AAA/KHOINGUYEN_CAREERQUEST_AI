@@ -52,6 +52,15 @@ const TURN_SCHEMA = {
       type: 'string',
       description: 'Một quan sát ngắn, thận trọng về hành vi đã thể hiện, dùng cho đánh giá cuối.',
     },
+    answerQuality: {
+      type: 'string',
+      enum: ['good', 'partial', 'vague', 'wrong', 'unsafe', 'off_topic'],
+      description: 'Phân loại chất lượng câu trả lời của người chơi.',
+    },
+    decisionReason: {
+      type: 'string',
+      description: 'Lý do ngắn gọn vì sao cho tiếp tục hoặc hoàn thành stage. Không hiển thị trực tiếp nếu không cần.',
+    },
     tone: {
       type: 'string',
       enum: ['calm', 'serious', 'encouraging', 'concerned', 'challenging', 'warning', 'happy', 'angry'],
@@ -64,6 +73,8 @@ const TURN_SCHEMA = {
     'shouldContinue',
     'stageComplete',
     'observation',
+    'answerQuality',
+    'decisionReason',
     'tone',
   ],
 };
@@ -107,9 +118,9 @@ async function createRoleplayIntroWithGemini({ stageId, playerProfile, scenarioO
     actorAvatar: actor.avatar,
     missionTitle: scenario.missionTitle,
     missionObjective: scenario.missionObjective,
-    message: normalizeText(parsed.message, scenario.context),
+    message: sanitizeRoleplayText(normalizeText(parsed.message, scenario.context)),
     question: scenario.mode === 'open'
-      ? normalizeText(parsed.question, scenario.initialQuestion || '')
+      ? sanitizeRoleplayText(normalizeText(parsed.question, scenario.initialQuestion || ''))
       : '',
     tone: normalizeTone(parsed.tone),
     source: 'gemini',
@@ -163,15 +174,12 @@ async function createRoleplayTurnWithGemini(input) {
     actorName: actor.name,
     actorRole: actor.role,
     actorAvatar: actor.avatar,
-    message: normalizeText(parsed.message, 'Tôi đã ghi nhận cách bạn xử lý tình huống này.'),
-    followUpQuestion: normalizeText(parsed.followUpQuestion, ''),
+    message: sanitizeRoleplayText(normalizeText(parsed.message, 'Tôi cần bạn nói rõ hơn cách xử lý thực tế.')), 
+    followUpQuestion: sanitizeRoleplayText(normalizeText(parsed.followUpQuestion, '')),
     hint: normalizeText(parsed.hint, ''),
     shouldContinue: Boolean(parsed.shouldContinue),
     stageComplete: Boolean(parsed.stageComplete),
-    observation: normalizeText(
-      parsed.observation,
-      'Người chơi đã tham gia xử lý tình huống roleplay.',
-    ),
+    observation: buildObservation(parsed),
     tone: normalizeTone(parsed.tone),
     source: 'gemini',
   };
@@ -233,6 +241,43 @@ function normalizeTone(value) {
 function normalizeText(value, fallback) {
   const text = String(value || '').trim();
   return text || fallback;
+}
+
+
+function buildObservation(parsed) {
+  const observation = normalizeText(
+    parsed.observation,
+    'Người chơi đã tham gia xử lý tình huống roleplay.',
+  );
+  const quality = normalizeText(parsed.answerQuality, 'partial');
+  const reason = normalizeText(parsed.decisionReason, '');
+
+  return reason ? `${observation} Chất lượng: ${quality}. Lý do: ${reason}` : `${observation} Chất lượng: ${quality}.`;
+}
+
+function sanitizeRoleplayText(value) {
+  let text = String(value || '').trim();
+  const bannedPrefixes = [
+    /^mini game\s*:?\s*/i,
+    /^nói như[^:]*:\s*/i,
+    /^dữ liệu nội bộ\s*:?\s*/i,
+    /^stage\s*\d*\s*:?\s*/i,
+  ];
+
+  for (const pattern of bannedPrefixes) {
+    text = text.replace(pattern, '').trim();
+  }
+
+  text = text
+    .replace(/\bMini game\b/gi, 'tình huống')
+    .replace(/\bstage\b/gi, 'ca')
+    .replace(/\bprompt\b/gi, 'yêu cầu')
+    .replace(/\bAI\b/g, 'nhân vật')
+    .replace(/Nói như[^.。!?\n]*/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+  return text;
 }
 
 function requireScenario(stageId) {
