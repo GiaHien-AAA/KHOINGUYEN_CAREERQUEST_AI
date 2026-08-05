@@ -87,6 +87,37 @@ app.get('/api/ai/status', (req, res) => {
   });
 });
 
+app.get('/api/ai/test', async (req, res) => {
+  try {
+    const { GoogleGenAI } = await import('@google/genai');
+
+    const ai = new GoogleGenAI({
+      apiKey: process.env.GEMINI_API_KEY
+    });
+
+    const model = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+
+    const response = await ai.models.generateContent({
+      model,
+      contents: 'Trả lời đúng 1 câu ngắn: Gemini đã kết nối thành công.'
+    });
+
+    return res.json({
+      success: true,
+      provider: process.env.AI_PROVIDER,
+      model,
+      text: response.text
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      provider: process.env.AI_PROVIDER,
+      model: process.env.GEMINI_MODEL,
+      message: error.message
+    });
+  }
+});
+
 app.use((req, res) => {
   return res.status(404).json({
     success: false,
