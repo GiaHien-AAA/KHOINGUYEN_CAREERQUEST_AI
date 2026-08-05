@@ -65,7 +65,7 @@ app.get('/health', (req, res) => {
     success: true,
     status: 'OK',
     provider: getProvider(),
-    model: String(process.env.GEMINI_MODEL || 'gemini-2.5-flash'),
+    model: String(process.env.GEMINI_MODEL || null),
     environment: NODE_ENV,
     uptimeSeconds: Math.floor(process.uptime()),
     database: getDatabaseStatus(),
@@ -76,6 +76,16 @@ app.use('/api', authRoutes);
 app.use('/api', accountRoutes);
 app.use('/api', roleplayRoutes);
 app.use('/api', evaluationRoutes);
+
+app.get('/api/ai/status', (req, res) => {
+  res.json({
+    success: true,
+    provider: process.env.AI_PROVIDER || 'mock',
+    model: process.env.GEMINI_MODEL || null,
+    hasGeminiKey: Boolean(process.env.GEMINI_API_KEY),
+    nodeEnv: process.env.NODE_ENV || 'development'
+  });
+});
 
 app.use((req, res) => {
   return res.status(404).json({
