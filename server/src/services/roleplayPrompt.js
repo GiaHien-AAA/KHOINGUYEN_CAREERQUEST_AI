@@ -74,33 +74,32 @@ function buildTurnInput({
 }) {
   if (eventType === 'wrong_attempt') {
     return `
-Người chơi vừa làm sai task kéo thả.
+Người chơi vừa chạy một đoạn code nhưng kết quả chưa đúng.
 
-Thứ tự người chơi chọn:
+Code người chơi vừa chạy:
 ${formatAction(playerAction)}
 
 Lần thử: ${attemptNumber}/${scenario.maxAttempts}
-Đáp án nội bộ để bạn hiểu, KHÔNG lộ nguyên chuỗi nếu chưa hết lượt:
-${formatAction(scenario.correctSolution)}
 
 Hãy phản ứng đúng vai:
-- Chỉ ra kiểu lỗi cụ thể: thiếu bước, thừa bước, xử lý quá sớm, in quá sớm, thiếu lặp, thiếu kiểm tra.
-- Nếu chưa hết lượt: gợi ý vừa đủ, không cho đáp án nguyên chuỗi.
-- Nếu sai nhiều lần: giọng căng hơn nhưng vẫn tập trung vào công việc.
+- Với người mới, chỉ ra lỗi bằng ngôn ngữ dễ hiểu: sai tên biến, sai cú pháp, chưa nhận dữ liệu, chưa in đúng kết quả hoặc logic chưa đúng.
+- Nếu chưa hết lượt: đưa đúng một gợi ý nhỏ để người chơi tự sửa, không viết luôn toàn bộ đáp án.
+- Nếu người chơi đang debug: khuyến khích quy trình chạy → đọc lỗi → sửa → chạy lại.
+- Nếu sai nhiều lần: có thể gắt hơn một chút nhưng vẫn tập trung vào công việc.
 - Trả về shouldContinue=false, stageComplete=false.
 `;
   }
 
   if (eventType === 'success_attempt') {
     return `
-Người chơi vừa hoàn thành đúng task kéo thả.
+Người chơi vừa chạy code thành công.
 
-Thứ tự block:
+Code người chơi:
 ${formatAction(playerAction)}
 
 Số lần thử: ${attemptNumber}
 
-Hãy công nhận một hành vi cụ thể, không khen lố. Trả về shouldContinue=false, stageComplete=true.
+Hãy công nhận đúng một hành vi cụ thể, ví dụ biết chạy thử, đọc lỗi, sửa tên biến hoặc trình bày code rõ ràng. Không khen lố. Trả về shouldContinue=false, stageComplete=true.
 `;
   }
 
@@ -130,7 +129,7 @@ NHIỆM VỤ CỦA BẠN:
 
 Gợi ý phân loại:
 - Nếu người chơi chỉ nói chung chung mà không có hành động cụ thể: phản biện nhẹ và hỏi “em làm bước nào trước?”.
-- Nếu người chơi thừa nhận chưa biết: không chê. Hãy đưa một gợi ý nhỏ, dễ hiểu, rồi cho họ thử lại.
+- Nếu người chơi thừa nhận chưa biết: không chê. Hãy giải thích đúng một bước nhỏ, dễ hiểu, rồi cho họ thử lại.
 - Với người mới, ưu tiên câu hỏi dạng một bước: “Em kiểm tra gì trước?”, “Em hỏi ai?”, “Em chọn việc nào trước?” thay vì yêu cầu giải thích cả quy trình.
 - Nếu người chơi có hành động nhưng thiếu căn cứ: hỏi căn cứ/rủi ro/mốc thời gian.
 - Nếu người chơi nói sai chuyên môn hoặc nguy hiểm: chỉnh thẳng, không đồng ý cho qua.

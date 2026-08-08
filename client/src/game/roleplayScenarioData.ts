@@ -65,7 +65,7 @@ export const ROLEPLAY_STAGE_IDS = [
 
 export type RoleplayStageId = typeof ROLEPLAY_STAGE_IDS[number];
 
-export type RoleplayStageMode = 'drag' | 'open';
+export type RoleplayStageMode = 'code' | 'open';
 
 export interface RoleplayActor {
   id: RoleplayActorId;
@@ -442,34 +442,37 @@ export const roleplayScenarios: RoleplayScenario[] = [
   {
     id: 'drag-stage-1',
     stageNumber: 1,
-    mode: 'drag',
+    mode: 'code',
     actorId: 'boss-byte',
-    missionTitle: 'TASK ĐẦU: ĐỪNG KÉO BỪA',
-    missionObjective: 'Sắp xếp quy trình nhỏ đầu tiên: lấy đủ dữ liệu, xử lý đúng lúc, rồi mới trả kết quả.',
-    context: 'Ngày thử việc đầu tiên. Boss Byte không cần bạn giỏi ngay, nhưng muốn thấy bạn nghĩ theo luồng chạy chứ không đoán mò.',
-    scene: 'Bạn vừa ngồi vào bàn thì sếp đẩy task đầu tiên qua màn hình. Không khí như buổi thử việc thật: làm được thì đi tiếp, kéo bừa là bị soi ngay.',
+    missionTitle: 'TRAINING: CHẠY HELLO WORLD',
+    missionObjective: 'Gõ lại đoạn code mẫu và chạy thử để làm quen với việc viết chương trình.',
+    context: 'Ngày đầu vào team. Boss Byte không bắt bạn biết code ngay. Anh muốn bạn hiểu cách một dòng lệnh tạo ra kết quả trên màn hình.',
+    scene: 'Boss Byte kéo ghế lại gần màn hình và mở một đoạn code rất ngắn. Đây là buổi training đầu tiên, không phải bài thi.',
+    initialQuestion: 'Em nhìn code mẫu, gõ lại rồi chạy thử nhé. Nếu lỗi thì đọc lỗi và sửa, đừng ngại thử.',
     maxConversationTurns: 0,
   },
   {
     id: 'drag-stage-2',
     stageNumber: 2,
-    mode: 'drag',
-    actorId: 'client-linh',
-    missionTitle: 'KHÁCH ĐANG CHỜ FILE BÁO CÁO',
-    missionObjective: 'Xử lý cả danh sách số liệu, không làm thủ công từng dòng.',
-    context: 'Chị Linh đang cần báo cáo để gửi trong cuộc họp. Chị không có thời gian nghe giải thích vòng vo.',
-    scene: 'Chị Linh đang chuẩn bị vào họp. File báo cáo nhiều dòng số liệu, làm tay từng dòng là trễ chắc.',
+    mode: 'code',
+    actorId: 'boss-byte',
+    missionTitle: 'FRESHER: NHẬN DỮ LIỆU VÀ HIỂN THỊ',
+    missionObjective: 'Dùng input để nhận tên người dùng rồi in lời chào có tên đó.',
+    context: 'Bạn đã chạy được chương trình đầu tiên. Boss Byte giao một bài gần với công việc hơn: chương trình phải nhận thông tin từ người dùng rồi hiển thị kết quả.',
+    scene: 'Boss Byte không đưa đáp án ngay. Anh cho bạn một đoạn code mẫu, yêu cầu bạn gõ lại, trình bày cho dễ đọc và chạy thử với tên Hưng.',
+    initialQuestion: 'Em thử làm theo mẫu trước. Nếu muốn trình bày code gọn hơn thì cứ sửa, miễn kết quả cuối cùng đúng.',
     maxConversationTurns: 0,
   },
   {
     id: 'drag-stage-3',
     stageNumber: 3,
-    mode: 'drag',
+    mode: 'code',
     actorId: 'qa-an',
-    missionTitle: 'QA CHẶN RELEASE',
-    missionObjective: 'Đừng xử lý bừa. Phải kiểm tra dữ liệu trước khi cho nó đi tiếp.',
-    context: 'QA An vừa chặn bản bàn giao vì có dữ liệu không hợp lệ vẫn bị đưa vào xử lý.',
-    scene: 'QA An đặt tablet xuống bàn. Test case đỏ ngay trước giờ demo, và bạn phải sửa luồng trước khi bản này đi tiếp.',
+    missionTitle: 'FRESHER: TÌM VÀ SỬA BUG',
+    missionObjective: 'Chạy đoạn code lỗi, đọc thông báo lỗi, tìm nguyên nhân, sửa code và chạy lại.',
+    context: 'Bạn đã biết viết và chạy code cơ bản. QA An gửi một đoạn code gần đúng nhưng đang lỗi ngay trước lúc demo.',
+    scene: 'QA An không yêu cầu bạn đoán đáp án. Anh chỉ muốn bạn làm đúng quy trình của một Fresher: chạy thử, đọc lỗi, sửa, rồi kiểm tra lại.',
+    initialQuestion: 'Chạy thử trước đi. Khi có lỗi, em nhìn dòng nào và vì sao em nghĩ nó sai?',
     maxConversationTurns: 0,
   },
   openScenario('open-stage-4', 4, 'pm-trang', '30 PHÚT NỮA BÀN GIAO', 'Thể hiện cách bạn xác định ưu tiên, xử lý rủi ro và giao tiếp khi thời gian rất ít.', 'Task bị lệch kết quả ngay sát giờ bàn giao. PM Trang cần bạn nói cách cứu tình hình ngay bây giờ.', 'War room im lặng bất thường. Đồng hồ vẫn chạy, còn PM Trang thì đang nhìn thẳng vào bạn.', 'Còn 30 phút nữa là bàn giao. Em chọn cứu phần nào trước, phần nào tạm để sau?'),

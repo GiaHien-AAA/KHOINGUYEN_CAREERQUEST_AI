@@ -105,7 +105,7 @@ export function CharacterBriefingPage({ stageId, playerProfile, onBack, onAccept
 
             <div className="mt-4 flex flex-wrap gap-2">
               <Chip text={actor.workspace.split('·')[0].trim()} color={actor.accent} />
-              <Chip text={scenario.mode === 'drag' ? 'Task kéo thả' : 'Nói chuyện trực tiếp'} color="#8be9fd" />
+              <Chip text={scenario.mode === 'code' ? 'Training code' : 'Nói chuyện trực tiếp'} color="#8be9fd" />
               <Chip text={actor.mood} color="#ffe066" />
             </div>
 

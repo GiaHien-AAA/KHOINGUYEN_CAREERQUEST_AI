@@ -23,7 +23,7 @@ export interface RoleplayScenarioOverride {
   missionObjective?: string;
   context?: string;
   initialQuestion?: string;
-  mode?: 'open' | 'drag';
+  mode?: 'open' | 'code';
   maxConversationTurns?: number;
 }
 
