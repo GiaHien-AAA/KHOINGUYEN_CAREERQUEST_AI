@@ -98,7 +98,6 @@ export function IndustryMiniGamePage({
   useEffect(() => {
     if (!stage) return;
 
-    let cancelled = false;
     setPhase('briefing');
     setIsLoadingIntro(true);
     setConversation([]);
@@ -125,9 +124,6 @@ export function IndustryMiniGamePage({
       },
     ]);
 
-    return () => {
-      cancelled = true;
-    };
   }, [stage, playerProfile]);
 
   function resetTaskState(task: IndustryTask) {
