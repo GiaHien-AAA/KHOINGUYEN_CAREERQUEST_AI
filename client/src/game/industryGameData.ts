@@ -143,7 +143,7 @@ function stage(
     title,
     context,
     playerGoal,
-    minLength: 25,
+    minLength: 20,
     focusTags,
     strongSignals,
     weakSignals,
@@ -250,7 +250,7 @@ export const industryGames: Partial<Record<CareerId, IndustryGame>> = {
   business: {
     careerId: 'business',
     gameTitle: 'Ngày thử việc quản trị',
-    introLine: 'Bạn đang ở giai đoạn học việc. Mỗi ca sẽ hướng dẫn trước, sau đó tăng dần độ khó để bạn thử cách làm của người mới vào nghề.',
+    introLine: 'Bạn sẽ ra quyết định, chia nguồn lực, xử lý khách hàng và bị phản biện như một ca làm việc thật.',
     mechanicLabel: 'CAREER CAMPAIGN · BUSINESS',
     stages: [
       stage(

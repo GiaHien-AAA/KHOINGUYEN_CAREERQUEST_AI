@@ -19,7 +19,7 @@ import {
 } from './game/careerCatalog';
 import {
   clearCurrentAccount,
-  getCurrentSessionProfile,
+  getCurrentAccount,
   getUnlockedCareerIds,
   unlockCareerForEmail,
 } from './services/accountStore';
@@ -48,28 +48,26 @@ type CheckoutItem =
   | { type: 'premium-report'; careerId: CareerId };
 
 function App() {
-  const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(() => getCurrentSessionProfile());
-  const [currentScreen, setCurrentScreen] = useState<GameScreen>(() => (getCurrentSessionProfile() ? 'career' : 'start'));
-  const [apiLoadingCount, setApiLoadingCount] = useState(0);
-
-  useEffect(() => {
-    document.body.dataset.apiLoading = apiLoadingCount > 0 ? 'true' : 'false';
-  }, [apiLoadingCount]);
-
-  useEffect(() => {
-    const handleApiLoading = (event: Event) => {
-      const delta = (event as CustomEvent<{ delta?: number }>).detail?.delta || 0;
-      setApiLoadingCount((current) => Math.max(0, current + delta));
-    };
-
-    window.addEventListener('careerquest:api-loading', handleApiLoading);
-    return () => window.removeEventListener('careerquest:api-loading', handleApiLoading);
-  }, []);
+  const [currentScreen, setCurrentScreen] = useState<GameScreen>(() => getCurrentAccount() ? 'career' : 'start');
+  const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null);
   const [selectedCareerId, setSelectedCareerId] = useState<CareerId | null>(null);
   const [checkoutItem, setCheckoutItem] = useState<CheckoutItem | null>(null);
   const [unlockedCareerIds, setUnlockedCareerIds] = useState<CareerId[]>(() => getUnlockedCareerIds());
   const [missionResult, setMissionResult] = useState<HybridMissionResult | null>(null);
   const [progressVersion, setProgressVersion] = useState(0);
+
+  useEffect(() => {
+    const account = getCurrentAccount();
+    if (!account) return;
+    setPlayerProfile({
+      userId: account.id,
+      fullName: account.fullName,
+      email: account.email,
+      userType: account.userType,
+      gender: account.gender,
+    });
+    setUnlockedCareerIds(getUnlockedCareerIds(account.email));
+  }, []);
 
   function refreshUnlocks(email?: string) {
     setUnlockedCareerIds(getUnlockedCareerIds(email || playerProfile?.email));

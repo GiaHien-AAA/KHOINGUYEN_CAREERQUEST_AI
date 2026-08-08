@@ -25,7 +25,6 @@ import type {
   RoleplayTurn,
 } from '../game/hybridMissionTypes';
 import {
-  getRoleplayIntro,
   sendRoleplayTurn,
   type RoleplayScenarioOverride,
   type RoleplayTone,
@@ -116,34 +115,15 @@ export function IndustryMiniGamePage({
     resetTaskState(stage.task);
     stageStartedAtRef.current = Date.now();
 
-    getRoleplayIntro(stage.stageId, playerProfile, buildScenarioOverride(stage))
-      .then((intro) => {
-        if (cancelled) return;
-        setInteractionId(intro.interactionId);
-        setActiveTone(intro.tone);
-        setConversation([
-          {
-            id: `${stage.stageId}-intro`,
-            speaker: 'actor',
-            text: intro.message,
-            tone: intro.tone,
-          },
-        ]);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setConversation([
-          {
-            id: `${stage.stageId}-local-intro`,
-            speaker: 'actor',
-            text: stage.context,
-            tone: 'serious',
-          },
-        ]);
-      })
-      .finally(() => {
-        if (!cancelled) setIsLoadingIntro(false);
-      });
+    setIsLoadingIntro(false);
+    setConversation([
+      {
+        id: `${stage.stageId}-clear-brief`,
+        speaker: 'actor',
+        text: `${stage.context}\n\nViệc của bạn: ${stage.playerGoal}`,
+        tone: 'serious',
+      },
+    ]);
 
     return () => {
       cancelled = true;
@@ -569,9 +549,10 @@ export function IndustryMiniGamePage({
           <section className="mt-5 rounded-[2rem] border border-white/10 bg-[#10162f]/95 p-5 shadow-2xl sm:p-6">
             <div className="mb-5 flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#8be9fd]">Nhiệm vụ nghề nghiệp</p>
+                <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#8be9fd]">{stageLevel(stage.stageNumber)} · NHIỆM VỤ NGHỀ NGHIỆP</p>
                 <h2 className="mt-1 text-3xl font-black text-[#fff8f0]">{stage.task.title}</h2>
-                <div className="mt-3 max-w-3xl rounded-2xl border border-[#ffe066]/25 bg-[#ffe066]/5 p-3"><p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#ffe066]">Chuyện gì đang xảy ra?</p><p className="mt-1 text-sm font-semibold leading-6 text-[#cbd5ff]">{stage.context}</p></div>
+                <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[#cbd5ff]">{stage.context}</p>
+                <BeginnerTaskGuide task={stage.task} goal={stage.playerGoal} />
               </div>
               <span className="rounded-full border border-[#ffe066]/40 bg-[#ffe066]/10 px-4 py-2 text-xs font-black text-[#ffe066]">
                 {taskTypeLabel(stage.task.type)}
@@ -649,14 +630,14 @@ export function IndustryMiniGamePage({
                       value={draft}
                       disabled={isLoadingIntro || isSending}
                       onChange={(event) => setDraft(event.target.value)}
-                      placeholder="Ví dụ: Em sẽ kiểm tra A trước vì... Sau đó em sẽ..."
+                      placeholder="Ví dụ: Em sẽ kiểm tra X trước vì... Sau đó em sẽ..."
                       className="min-h-20 flex-1 resize-none rounded-2xl border-2 border-[#d6cbb5] bg-white px-4 py-3 text-base font-semibold leading-7 text-[#172033] outline-none focus:border-[#7c3aed] disabled:opacity-60"
                     />
                     <button type="button" disabled={isLoadingIntro || isSending} onClick={submitAnswer} className="self-end rounded-2xl border-2 border-[#070a17] bg-[#ffe066] px-5 py-3 text-sm font-black text-[#172033] shadow-[4px_4px_0_#070a17] transition hover:-translate-y-0.5 disabled:opacity-40">
                       {isSending ? '...' : 'GỬI'}
                     </button>
                   </div>
-                  <p className="mt-2 px-2 text-xs font-bold text-[#6b5c43]">Không cần dùng thuật ngữ. Hãy nói theo mẫu: <strong>Em sẽ làm gì → Vì sao → Bước tiếp theo</strong>.</p>
+                  <p className="mt-2 px-2 text-xs font-bold text-[#6b5c43]">Nói như đang chat công việc thật: ngắn, rõ, có lý do.</p>
                   {validationMessage && (
                     <p className="mt-3 rounded-2xl border-2 border-[#ffb84d] bg-[#fff0d6] px-3 py-2 text-sm font-bold text-[#8a4b00]">
                       {validationMessage}
@@ -684,6 +665,44 @@ export function IndustryMiniGamePage({
 }
 
 
+function stageLevel(stageNumber: number) {
+  if (stageNumber <= 1) return 'TRAINING';
+  if (stageNumber === 2) return 'FRESHER';
+  return 'JUNIOR';
+}
+
+function BeginnerTaskGuide({ task, goal }: { task: IndustryTask; goal: string }) {
+  const action = task.type === 'allocation'
+    ? 'Chia tổng nguồn lực theo các mục tiêu và nhìn xem mục nào cần ưu tiên.'
+    : task.type === 'sorting'
+      ? 'Đọc từng thẻ rồi kéo vào nhóm phù hợp. Không cần đoán thuật ngữ; đọc phần mô tả nhỏ dưới mỗi thẻ.'
+      : task.type === 'priority'
+        ? 'Kéo các việc thành thứ tự từ việc cần làm trước đến việc có thể làm sau.'
+        : task.type === 'layout'
+          ? 'Đọc yêu cầu của từng khu vực rồi chọn phòng phù hợp.'
+          : 'Chọn những dấu hiệu bạn nghĩ cần xử lý hoặc xác minh trước.';
+
+  return (
+    <div className="mt-4 rounded-2xl border-2 border-[#63e6a8]/35 bg-[#10271e] p-4">
+      <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#63e6a8]">HƯỚNG DẪN CHO NGƯỜI MỚI</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <GuideStep n="1" title="Đọc tình huống" text={goal} />
+        <GuideStep n="2" title="Làm nhiệm vụ" text={action} />
+        <GuideStep n="3" title="Giải thích" text="Sau mini game, nhân vật sẽ hỏi vì sao bạn chọn như vậy. Hãy nói bằng lời của bạn." />
+      </div>
+    </div>
+  );
+}
+
+function GuideStep({ n, title, text }: { n: string; title: string; text: string }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+      <div className="flex items-center gap-2"><span className="flex size-7 items-center justify-center rounded-full bg-[#ffe066] text-xs font-black text-[#172033]">{n}</span><span className="text-sm font-black text-white">{title}</span></div>
+      <p className="mt-2 text-xs leading-5 text-[#cbd5ff]">{text}</p>
+    </div>
+  );
+}
+
 function buildScenarioOverride(stage: IndustryRoleplayStage): RoleplayScenarioOverride {
   const syncedContext = [
     stage.context,
@@ -703,32 +722,6 @@ function buildScenarioOverride(stage: IndustryRoleplayStage): RoleplayScenarioOv
     mode: 'open',
     maxConversationTurns: 4,
   };
-}
-
-function beginnerGuide(task: IndustryTask) {
-  const guides: Record<IndustryTask['type'], { action: string; success: string }> = {
-    allocation: {
-      action: 'Chia tổng 100 điểm cho các việc. Việc nào ảnh hưởng trực tiếp đến kết quả thì nên được ưu tiên hơn.',
-      success: 'Khi chia xong, tổng phải đúng 100 điểm. Không cần biết thuật ngữ chuyên ngành để làm bài này.',
-    },
-    sorting: {
-      action: 'Đọc từng thẻ rồi chọn nhóm phù hợp nhất. Nếu chưa chắc, hãy nhìn vào hậu quả của việc đó trước.',
-      success: 'Mỗi thẻ chỉ cần chọn một nhóm. Hãy chọn theo tình huống, không cần đoán “đáp án chuyên môn”.',
-    },
-    priority: {
-      action: 'Xếp việc quan trọng nhất lên trên. Hãy nghĩ: việc nào nếu không làm trước sẽ gây hậu quả lớn nhất?',
-      success: 'Dùng nút ↑ ↓ để đổi thứ tự. Bạn chỉ cần giải thích được vì sao mình ưu tiên như vậy.',
-    },
-    layout: {
-      action: 'Đặt mỗi phòng vào vị trí phù hợp nhất với cách sử dụng thực tế.',
-      success: 'Hãy nghĩ như người sẽ sử dụng không gian này mỗi ngày, không cần biết thuật ngữ kiến trúc.',
-    },
-    'risk-check': {
-      action: 'Chọn những điều bạn cho rằng cần chú ý nhất trong tình huống này.',
-      success: 'Không cần chọn nhiều. Hãy chọn những điều nếu bỏ qua có thể gây vấn đề lớn.',
-    },
-  };
-  return guides[task.type];
 }
 
 interface IndustryTaskPanelProps {
@@ -768,15 +761,7 @@ function IndustryTaskPanel({
 }: IndustryTaskPanelProps) {
   return (
     <div className="rounded-[2rem] border border-white/10 bg-[#151b38]/95 p-4 sm:p-5">
-      <div className="rounded-2xl border-2 border-[#8be9fd]/30 bg-[#8be9fd]/10 p-4">
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#8be9fd]">Hướng dẫn cho người mới</p>
-        <p className="mt-2 text-sm font-black leading-6 text-white">{beginnerGuide(task).action}</p>
-        <p className="mt-2 text-xs font-semibold leading-5 text-[#cbd5ff]">{beginnerGuide(task).success}</p>
-      </div>
-      <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
-        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#ffe066]">Tình huống</p>
-        <p className="mt-1 text-sm font-semibold leading-6 text-[#dbe4ff]">{task.brief}</p>
-      </div>
+      <p className="text-sm font-semibold leading-6 text-[#cbd5ff]">{task.brief}</p>
 
       <div className="mt-5">
         {task.type === 'allocation' && (

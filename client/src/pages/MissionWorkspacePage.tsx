@@ -66,6 +66,8 @@ export function MissionWorkspacePage({
   const [stageIntro, setStageIntro] = useState<RoleplayIntro | null>(null);
   const [interactionId, setInteractionId] = useState('');
   const [workspaceBlocks, setWorkspaceBlocks] = useState<WorkspaceBlock[]>([]);
+  const [codeText, setCodeText] = useState('');
+  const [codeOutput, setCodeOutput] = useState('');
   const [attemptsUsed, setAttemptsUsed] = useState(0);
   const [timeLeft, setTimeLeft] = useState(campaignStages[0].timeLimit);
   const [missionStatus, setMissionStatus] = useState<MissionStatus>('playing');
@@ -87,6 +89,8 @@ export function MissionWorkspacePage({
     setStageIntro(null);
     setInteractionId('');
     setWorkspaceBlocks([]);
+    setCodeText(currentStage.codeStarter || '');
+    setCodeOutput('');
     setAttemptsUsed(0);
     setTimeLeft(currentStage.timeLimit);
     setMissionStatus('playing');
@@ -228,6 +232,56 @@ export function MissionWorkspacePage({
     }
   }
 
+  async function handleCodeRun() {
+    if (missionStatus !== 'playing' || isRoleplayLoading) return;
+
+    const normalized = codeText
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/;$/, '');
+    const expected = String(currentStage.codeExpected || '')
+      .trim()
+      .replace(/\s+/g, '')
+      .replace(/;$/, '');
+    const nextAttempts = attemptsUsed + 1;
+    setAttemptsUsed(nextAttempts);
+
+    if (!codeText.trim()) {
+      setSystemFeedback('Bạn chưa viết code. Hãy nhập câu lệnh rồi bấm CHẠY THỬ.');
+      return;
+    }
+
+    const isCorrect = normalized === expected;
+    if (!isCorrect) {
+      recordBehavior('wrong_attempt', [], nextAttempts);
+      setCodeOutput('Có lỗi: kết quả chưa đúng. Kiểm tra tên hàm, dấu ngoặc kép và nội dung cần in.');
+      setSystemFeedback(currentStage.codeHint || 'Hãy kiểm tra lại câu lệnh và chạy thử lần nữa.');
+      const usedAllAttempts = nextAttempts >= currentStage.maxAttempts;
+      setMissionStatus(usedAllAttempts ? 'failed' : 'playing');
+      await requestRoleplayFeedback({
+        eventType: 'wrong_attempt',
+        playerAction: [],
+        attemptNumber: nextAttempts,
+        fallbackComplete: false,
+      });
+      return;
+    }
+
+    recordBehavior('correct_attempt', [], nextAttempts);
+    const timeTaken = currentStage.timeLimit - timeLeft;
+    const score = calculateStageScore(nextAttempts, timeTaken, currentStage.timeLimit);
+    setCodeOutput(currentStage.expectedOutput);
+    setStageResult({ stageNumber: currentStage.stageNumber, attemptsUsed: nextAttempts, timeTaken, score });
+    setMissionStatus('success');
+    setSystemFeedback('Chạy thành công. Bạn vừa hoàn thành bước training đầu tiên.');
+    await requestRoleplayFeedback({
+      eventType: 'success_attempt',
+      playerAction: [],
+      attemptNumber: nextAttempts,
+      fallbackComplete: true,
+    });
+  }
+
   async function handleRun() {
     if (missionStatus !== 'playing' || isRoleplayLoading) {
       return;
@@ -352,6 +406,8 @@ export function MissionWorkspacePage({
   function retryStage() {
     recordBehavior('retry_stage', [], 0);
     setWorkspaceBlocks([]);
+    setCodeText(currentStage.codeStarter || '');
+    setCodeOutput('');
     setAttemptsUsed(0);
     setTimeLeft(currentStage.timeLimit);
     setMissionStatus('playing');
@@ -444,7 +500,7 @@ export function MissionWorkspacePage({
                 </h1>
               </div>
               <span className="w-fit border-2 border-[#ffe066] bg-[#7c3aed] px-3 py-2 text-xs font-black">
-                {currentStage.difficulty}
+                {currentStage.stageNumber === 1 ? 'TRAINING' : currentStage.stageNumber === 2 ? 'FRESHER' : 'JUNIOR'}
               </span>
             </div>
           </div>
@@ -457,20 +513,37 @@ export function MissionWorkspacePage({
                 testCase={currentStage.testCase}
                 expectedOutput={currentStage.expectedOutput}
               />
-              <BlockPalette
-                availableBlocks={currentStage.availableBlocks}
-                onDragStart={handleDragStart}
-                onAddBlock={addBlock}
-              />
+              {currentStage.mode === 'code' ? (
+                <CodeTrainingGuide
+                  hint={currentStage.codeHint || ''}
+                  starter={currentStage.codeStarter || ''}
+                />
+              ) : (
+                <BlockPalette
+                  availableBlocks={currentStage.availableBlocks}
+                  onDragStart={handleDragStart}
+                  onAddBlock={addBlock}
+                />
+              )}
             </aside>
 
             <div className="min-w-0 space-y-4">
-              <Workspace
-                blocks={workspaceBlocks}
-                onDrop={handleDrop}
-                onRemove={removeBlock}
-                onMove={moveBlock}
-              />
+              {currentStage.mode === 'code' ? (
+                <CodeEditor
+                  value={codeText}
+                  output={codeOutput}
+                  disabled={missionStatus !== 'playing' || isRoleplayLoading}
+                  onChange={setCodeText}
+                  onRun={() => void handleCodeRun()}
+                />
+              ) : (
+                <Workspace
+                  blocks={workspaceBlocks}
+                  onDrop={handleDrop}
+                  onRemove={removeBlock}
+                  onMove={moveBlock}
+                />
+              )}
 
               <div className="border-4 border-[#4d568c] bg-[#181d3a] p-4">
                 <p className="text-[10px] tracking-[0.25em] text-[#8be9fd] sm:text-xs">
@@ -492,19 +565,19 @@ export function MissionWorkspacePage({
                 <button
                   type="button"
                   disabled={missionStatus !== 'playing' || isRoleplayLoading}
-                  onClick={resetWorkspace}
+                  onClick={currentStage.mode === 'code' ? () => { setCodeText(currentStage.codeStarter || ''); setCodeOutput(''); } : resetWorkspace}
                   className="border-4 border-[#ffb84d] bg-[#5b3718] px-4 py-3 font-black disabled:opacity-40"
                 >
-                  ↻ RESET
+                  ↻ {currentStage.mode === 'code' ? 'ĐẶT LẠI CODE' : 'RESET'}
                 </button>
                 <motion.button
                   type="button"
                   disabled={missionStatus !== 'playing' || isRoleplayLoading}
-                  onClick={() => void handleRun()}
+                  onClick={() => void (currentStage.mode === 'code' ? handleCodeRun() : handleRun())}
                   whileHover={missionStatus === 'playing' ? { y: -4 } : undefined}
                   className="border-4 border-[#ffe066] bg-[#7c3aed] px-4 py-3 font-black shadow-[5px_5px_0_#000] disabled:opacity-40"
                 >
-                  ▶ RUN PROGRAM
+                  ▶ {currentStage.mode === 'code' ? 'CHẠY THỬ' : 'CHẠY CHƯƠNG TRÌNH'}
                 </motion.button>
               </div>
             </div>
@@ -620,6 +693,51 @@ function MissionDescription({
         <p className="text-xs text-[#8be9fd] sm:text-sm">{testCase}</p>
         <p className="mt-2 font-black text-[#63e6a8]">{expectedOutput}</p>
       </div>
+    </div>
+  );
+}
+
+function CodeTrainingGuide({ hint, starter }: { hint: string; starter: string }) {
+  return (
+    <div className="border-4 border-[#63e6a8] bg-[#16382d] p-4">
+      <p className="text-[10px] tracking-[0.25em] text-[#8be9fd] sm:text-xs">HỌC VIỆC · BƯỚC 1</p>
+      <p className="mt-3 text-sm font-black leading-6 text-white">Làm mẫu trước, rồi mới làm task khó hơn.</p>
+      <ol className="mt-3 space-y-2 text-xs leading-5 text-[#d9ffe9] sm:text-sm">
+        <li>1. Nhìn đoạn code mẫu bên dưới.</li>
+        <li>2. Gõ lại vào ô code.</li>
+        <li>3. Bấm <b>CHẠY THỬ</b> để xem kết quả.</li>
+      </ol>
+      <pre className="mt-4 overflow-x-auto rounded-xl bg-[#08140f] p-3 text-xs text-[#63e6a8]">{starter}</pre>
+      <p className="mt-3 text-xs font-bold text-[#ffe066]">{hint}</p>
+    </div>
+  );
+}
+
+function CodeEditor({ value, output, disabled, onChange, onRun }: {
+  value: string; output: string; disabled: boolean; onChange: (value: string) => void; onRun: () => void;
+}) {
+  return (
+    <div className="border-4 border-[#4d568c] bg-[#0c1025] p-3 sm:p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-[10px] tracking-[0.25em] text-[#8be9fd] sm:text-xs">CODE EDITOR</p>
+          <h2 className="mt-2 text-lg font-black text-[#ffe066]">Gõ code và chạy thử</h2>
+        </div>
+        <span className="rounded-full bg-[#63e6a8]/15 px-3 py-1 text-[10px] font-black text-[#63e6a8]">PYTHON CƠ BẢN</span>
+      </div>
+      <textarea
+        value={value}
+        disabled={disabled}
+        onChange={(event) => onChange(event.target.value)}
+        spellCheck={false}
+        className="mt-4 min-h-[220px] w-full resize-y rounded-2xl border-2 border-[#4d568c] bg-[#050817] p-4 font-mono text-sm leading-7 text-[#d9ffe9] outline-none focus:border-[#ffe066] disabled:opacity-60"
+        aria-label="Ô nhập code"
+      />
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <button type="button" onClick={onRun} disabled={disabled} className="rounded-xl border-2 border-[#ffe066] bg-[#7c3aed] px-5 py-3 text-sm font-black text-white disabled:opacity-40">▶ CHẠY THỬ</button>
+        <span className="text-xs font-bold text-[#9fa8d8]">Bạn có thể sửa code rồi chạy lại bất cứ lúc nào.</span>
+      </div>
+      {output && <div className="mt-4 rounded-xl border-2 border-[#63e6a8]/40 bg-[#10271e] p-3 font-mono text-sm font-bold text-[#63e6a8]">{output}</div>}
     </div>
   );
 }

@@ -54,11 +54,6 @@ select {
 
 button {
   touch-action: manipulation;
-  cursor: pointer;
-}
-
-button:disabled {
-  cursor: not-allowed;
 }
 
 textarea {
@@ -181,22 +176,26 @@ video {
 }
 
 
-/* Lightweight feedback while an API request is being processed. */
-body[data-api-loading='true']::after {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  z-index: 9999;
-  background: linear-gradient(90deg, transparent 0%, #8be9fd 35%, #ffe066 50%, #8be9fd 65%, transparent 100%);
-  background-size: 220% 100%;
-  animation: careerquest-loading-bar 1.15s linear infinite;
-  pointer-events: none;
+button, [role='button'], a {
+  cursor: pointer;
 }
 
-@keyframes careerquest-loading-bar {
-  from { background-position: 100% 0; }
-  to { background-position: -100% 0; }
+button:disabled, [role='button'][aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+.loading-dots::after {
+  content: '...';
+  display: inline-block;
+  width: 1.5em;
+  overflow: hidden;
+  vertical-align: bottom;
+  animation: loading-dots 1.2s steps(4, end) infinite;
+}
+
+@keyframes loading-dots {
+  0% { width: 0; }
+  25% { width: 0.5em; }
+  50% { width: 1em; }
+  75%, 100% { width: 1.5em; }
 }
