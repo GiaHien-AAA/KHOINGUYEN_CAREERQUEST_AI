@@ -42,6 +42,8 @@ async function apiRequest<T>(path: string, options: {
     headers.Authorization = `Bearer ${options.token}`;
   }
 
+  window.dispatchEvent(new CustomEvent('careerquest:api-loading', { detail: { delta: 1 } }));
+
   let response: Response;
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
@@ -51,6 +53,8 @@ async function apiRequest<T>(path: string, options: {
     });
   } catch {
     throw new ApiError('Không kết nối được backend. Đang dùng dữ liệu local tạm thời.', 0, 'NETWORK_ERROR');
+  } finally {
+    window.dispatchEvent(new CustomEvent('careerquest:api-loading', { detail: { delta: -1 } }));
   }
 
   let envelope: ApiEnvelope<T>;

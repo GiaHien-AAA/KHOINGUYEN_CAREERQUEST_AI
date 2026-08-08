@@ -571,7 +571,7 @@ export function IndustryMiniGamePage({
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#8be9fd]">Nhiệm vụ nghề nghiệp</p>
                 <h2 className="mt-1 text-3xl font-black text-[#fff8f0]">{stage.task.title}</h2>
-                <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[#cbd5ff]">{stage.context}</p>
+                <div className="mt-3 max-w-3xl rounded-2xl border border-[#ffe066]/25 bg-[#ffe066]/5 p-3"><p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#ffe066]">Chuyện gì đang xảy ra?</p><p className="mt-1 text-sm font-semibold leading-6 text-[#cbd5ff]">{stage.context}</p></div>
               </div>
               <span className="rounded-full border border-[#ffe066]/40 bg-[#ffe066]/10 px-4 py-2 text-xs font-black text-[#ffe066]">
                 {taskTypeLabel(stage.task.type)}
@@ -649,14 +649,14 @@ export function IndustryMiniGamePage({
                       value={draft}
                       disabled={isLoadingIntro || isSending}
                       onChange={(event) => setDraft(event.target.value)}
-                      placeholder="Nhắn câu trả lời của bạn..."
+                      placeholder="Ví dụ: Em sẽ kiểm tra A trước vì... Sau đó em sẽ..."
                       className="min-h-20 flex-1 resize-none rounded-2xl border-2 border-[#d6cbb5] bg-white px-4 py-3 text-base font-semibold leading-7 text-[#172033] outline-none focus:border-[#7c3aed] disabled:opacity-60"
                     />
                     <button type="button" disabled={isLoadingIntro || isSending} onClick={submitAnswer} className="self-end rounded-2xl border-2 border-[#070a17] bg-[#ffe066] px-5 py-3 text-sm font-black text-[#172033] shadow-[4px_4px_0_#070a17] transition hover:-translate-y-0.5 disabled:opacity-40">
                       {isSending ? '...' : 'GỬI'}
                     </button>
                   </div>
-                  <p className="mt-2 px-2 text-xs font-bold text-[#6b5c43]">Nói như đang chat công việc thật: ngắn, rõ, có lý do.</p>
+                  <p className="mt-2 px-2 text-xs font-bold text-[#6b5c43]">Không cần dùng thuật ngữ. Hãy nói theo mẫu: <strong>Em sẽ làm gì → Vì sao → Bước tiếp theo</strong>.</p>
                   {validationMessage && (
                     <p className="mt-3 rounded-2xl border-2 border-[#ffb84d] bg-[#fff0d6] px-3 py-2 text-sm font-bold text-[#8a4b00]">
                       {validationMessage}
@@ -705,6 +705,32 @@ function buildScenarioOverride(stage: IndustryRoleplayStage): RoleplayScenarioOv
   };
 }
 
+function beginnerGuide(task: IndustryTask) {
+  const guides: Record<IndustryTask['type'], { action: string; success: string }> = {
+    allocation: {
+      action: 'Chia tổng 100 điểm cho các việc. Việc nào ảnh hưởng trực tiếp đến kết quả thì nên được ưu tiên hơn.',
+      success: 'Khi chia xong, tổng phải đúng 100 điểm. Không cần biết thuật ngữ chuyên ngành để làm bài này.',
+    },
+    sorting: {
+      action: 'Đọc từng thẻ rồi chọn nhóm phù hợp nhất. Nếu chưa chắc, hãy nhìn vào hậu quả của việc đó trước.',
+      success: 'Mỗi thẻ chỉ cần chọn một nhóm. Hãy chọn theo tình huống, không cần đoán “đáp án chuyên môn”.',
+    },
+    priority: {
+      action: 'Xếp việc quan trọng nhất lên trên. Hãy nghĩ: việc nào nếu không làm trước sẽ gây hậu quả lớn nhất?',
+      success: 'Dùng nút ↑ ↓ để đổi thứ tự. Bạn chỉ cần giải thích được vì sao mình ưu tiên như vậy.',
+    },
+    layout: {
+      action: 'Đặt mỗi phòng vào vị trí phù hợp nhất với cách sử dụng thực tế.',
+      success: 'Hãy nghĩ như người sẽ sử dụng không gian này mỗi ngày, không cần biết thuật ngữ kiến trúc.',
+    },
+    'risk-check': {
+      action: 'Chọn những điều bạn cho rằng cần chú ý nhất trong tình huống này.',
+      success: 'Không cần chọn nhiều. Hãy chọn những điều nếu bỏ qua có thể gây vấn đề lớn.',
+    },
+  };
+  return guides[task.type];
+}
+
 interface IndustryTaskPanelProps {
   task: IndustryTask;
   taskSubmitted: boolean;
@@ -742,7 +768,15 @@ function IndustryTaskPanel({
 }: IndustryTaskPanelProps) {
   return (
     <div className="rounded-[2rem] border border-white/10 bg-[#151b38]/95 p-4 sm:p-5">
-      <p className="text-sm font-semibold leading-6 text-[#cbd5ff]">{task.brief}</p>
+      <div className="rounded-2xl border-2 border-[#8be9fd]/30 bg-[#8be9fd]/10 p-4">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#8be9fd]">Hướng dẫn cho người mới</p>
+        <p className="mt-2 text-sm font-black leading-6 text-white">{beginnerGuide(task).action}</p>
+        <p className="mt-2 text-xs font-semibold leading-5 text-[#cbd5ff]">{beginnerGuide(task).success}</p>
+      </div>
+      <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 p-3">
+        <p className="text-[10px] font-black uppercase tracking-[0.18em] text-[#ffe066]">Tình huống</p>
+        <p className="mt-1 text-sm font-semibold leading-6 text-[#dbe4ff]">{task.brief}</p>
+      </div>
 
       <div className="mt-5">
         {task.type === 'allocation' && (

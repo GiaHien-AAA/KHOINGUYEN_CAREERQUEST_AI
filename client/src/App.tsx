@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { StartPage } from './pages/StartPage';
 import { LoginPage } from './pages/LoginPage';
@@ -19,6 +19,7 @@ import {
 } from './game/careerCatalog';
 import {
   clearCurrentAccount,
+  getCurrentSessionProfile,
   getUnlockedCareerIds,
   unlockCareerForEmail,
 } from './services/accountStore';
@@ -47,8 +48,23 @@ type CheckoutItem =
   | { type: 'premium-report'; careerId: CareerId };
 
 function App() {
-  const [currentScreen, setCurrentScreen] = useState<GameScreen>('start');
-  const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null);
+  const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(() => getCurrentSessionProfile());
+  const [currentScreen, setCurrentScreen] = useState<GameScreen>(() => (getCurrentSessionProfile() ? 'career' : 'start'));
+  const [apiLoadingCount, setApiLoadingCount] = useState(0);
+
+  useEffect(() => {
+    document.body.dataset.apiLoading = apiLoadingCount > 0 ? 'true' : 'false';
+  }, [apiLoadingCount]);
+
+  useEffect(() => {
+    const handleApiLoading = (event: Event) => {
+      const delta = (event as CustomEvent<{ delta?: number }>).detail?.delta || 0;
+      setApiLoadingCount((current) => Math.max(0, current + delta));
+    };
+
+    window.addEventListener('careerquest:api-loading', handleApiLoading);
+    return () => window.removeEventListener('careerquest:api-loading', handleApiLoading);
+  }, []);
   const [selectedCareerId, setSelectedCareerId] = useState<CareerId | null>(null);
   const [checkoutItem, setCheckoutItem] = useState<CheckoutItem | null>(null);
   const [unlockedCareerIds, setUnlockedCareerIds] = useState<CareerId[]>(() => getUnlockedCareerIds());

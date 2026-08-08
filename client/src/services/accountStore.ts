@@ -129,6 +129,19 @@ export function getCurrentAccount() {
   return readAccounts().find((account) => account.email === email) || null;
 }
 
+export function getCurrentSessionProfile() {
+  const account = getCurrentAccount();
+  if (!account) return null;
+
+  return {
+    userId: account.id,
+    fullName: account.fullName,
+    email: account.email,
+    userType: account.userType,
+    gender: account.gender,
+  };
+}
+
 export function getUnlockedCareerIds(email?: string): CareerId[] {
   const account = email
     ? readAccounts().find((item) => item.email === email.toLowerCase())
