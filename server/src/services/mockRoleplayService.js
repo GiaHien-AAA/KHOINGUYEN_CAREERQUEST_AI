@@ -465,7 +465,6 @@ function getPlayerAddress(playerProfile) {
 
 function classifyMessageQuality(text) {
   const clean = normalizeVietnamese(String(text || '').toLowerCase());
-  const wordCount = clean.split(/\s+/).filter(Boolean).length;
   const strongSignals = [
     'truoc', 'sau', 'uu tien', 'deadline', 'rui ro', 'bao', 'team', 'kiem tra',
     'test', 'log', 'chia', 'phu trach', 'cat', 'tam', 'khach', 'demo', 'fix',
@@ -481,9 +480,7 @@ function classifyMessageQuality(text) {
   const strongCount = strongSignals.filter((keyword) => clean.includes(keyword)).length;
   const shallowCount = shallowSignals.filter((keyword) => clean.includes(keyword)).length;
 
-  if (wordCount < 18) return 'shallow';
-  if (strongCount >= 2 && shallowCount === 0) return 'strong';
-  if (strongCount >= 3) return 'strong';
+  if (strongCount >= 1 && shallowCount === 0) return 'strong';
   return 'shallow';
 }
 

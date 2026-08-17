@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 
 import { CharacterPortrait, getCharacterSpritePath } from '../components/CharacterPortrait';
+import { CareerDictionaryBubble } from '../components/CareerDictionaryBubble';
 import type { PlayerProfile } from './PlayerProfilePage';
 import {
   getCareerById,
@@ -180,6 +181,22 @@ export function IndustryMiniGamePage({
         </section>
       </main>
     );
+  }
+
+  function handleStageBack() {
+    if (phase === 'chat') {
+      setPhase('task');
+      setValidationMessage('');
+      return;
+    }
+
+    if (phase === 'task') {
+      setPhase('briefing');
+      setTaskValidationMessage('');
+      return;
+    }
+
+    onBack();
   }
 
   function submitTask() {
@@ -372,8 +389,8 @@ export function IndustryMiniGamePage({
     if (!stage || isSending || stageCompleted || !taskSubmitted) return;
 
     const answerText = draft.trim();
-    if (answerText.length < stage.minLength) {
-      setValidationMessage(`Viết cụ thể hơn một chút. Tối thiểu khoảng ${stage.minLength} ký tự để nhân vật có dữ liệu phản hồi.`);
+    if (!answerText) {
+      setValidationMessage('Hãy nhập câu trả lời trước khi gửi.');
       return;
     }
 
@@ -501,8 +518,8 @@ export function IndustryMiniGamePage({
               </p>
               <h1 className="mt-1 text-2xl font-black text-[#fff8f0] sm:text-3xl">{stage.title}</h1>
             </div>
-            <button type="button" onClick={onBack} className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-black text-[#dbe4ff] hover:bg-white/15">
-              Chọn ngành
+            <button type="button" onClick={handleStageBack} className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-black text-[#dbe4ff] hover:bg-white/15">
+              {phase === 'chat' ? '◀ Xem lại nhiệm vụ' : phase === 'task' ? '◀ Xem lại giao việc' : 'Chọn ngành'}
             </button>
           </div>
           <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
@@ -656,10 +673,11 @@ export function IndustryMiniGamePage({
           </section>
         )}
       </div>
+
+      <CareerDictionaryBubble careerId={careerId} />
     </main>
   );
 }
-
 
 function stageLevel(stageNumber: number) {
   if (stageNumber <= 1) return 'TRAINING';

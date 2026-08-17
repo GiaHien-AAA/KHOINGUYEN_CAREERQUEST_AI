@@ -57,6 +57,39 @@ function App() {
   const [progressVersion, setProgressVersion] = useState(0);
 
   useEffect(() => {
+    const gameplayScreen = currentScreen === 'boss' || currentScreen === 'workspace' || currentScreen === 'mini-game';
+    const root = document.documentElement;
+    root.classList.toggle('gameplay-no-select', gameplayScreen);
+
+    if (!gameplayScreen) return undefined;
+
+    const blockClipboard = (event: ClipboardEvent) => {
+      event.preventDefault();
+    };
+    const blockContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
+    };
+    const blockSelection = (event: Event) => {
+      event.preventDefault();
+    };
+
+    document.addEventListener('copy', blockClipboard);
+    document.addEventListener('cut', blockClipboard);
+    document.addEventListener('paste', blockClipboard);
+    document.addEventListener('contextmenu', blockContextMenu);
+    document.addEventListener('selectstart', blockSelection);
+
+    return () => {
+      document.removeEventListener('copy', blockClipboard);
+      document.removeEventListener('cut', blockClipboard);
+      document.removeEventListener('paste', blockClipboard);
+      document.removeEventListener('contextmenu', blockContextMenu);
+      document.removeEventListener('selectstart', blockSelection);
+      root.classList.remove('gameplay-no-select');
+    };
+  }, [currentScreen]);
+
+  useEffect(() => {
     const account = getCurrentAccount();
     if (!account) return;
     setPlayerProfile({

@@ -45,6 +45,19 @@ body {
   min-height: 100vh;
 }
 
+.gameplay-no-select,
+.gameplay-no-select * {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+.gameplay-no-select input,
+.gameplay-no-select textarea {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
 button,
 input,
 textarea,

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { CharacterPortrait, getCharacterSpritePath } from '../components/CharacterPortrait';
+import { CareerDictionaryBubble } from '../components/CareerDictionaryBubble';
 import { PixelSceneBackground } from '../components/PixelSceneBackground';
 import type { PlayerProfile } from './PlayerProfilePage';
 import { CharacterBriefingPage } from './CharacterBriefingPage';
@@ -117,9 +118,9 @@ export function OpenRoleplayStage({
         playerProfile={playerProfile}
         onBack={onBack}
         onAccept={(acceptedIntro) => {
-          setIntro(acceptedIntro);
-          setInteractionId(acceptedIntro.interactionId);
-          setMessages([
+          setIntro((current) => current || acceptedIntro);
+          setInteractionId((current) => current || acceptedIntro.interactionId);
+          setMessages((current) => current.length > 0 ? current : [
             {
               id: `actor-intro-${mission.id}`,
               speaker: 'actor',
@@ -138,10 +139,8 @@ export function OpenRoleplayStage({
   async function submitAnswer() {
     const cleanAnswer = answer.trim();
 
-    if (cleanAnswer.length < mission.minimumLength) {
-      setErrorMessage(
-        `Nói rõ hơn chút. Câu này ngắn quá nên nhân vật chưa có gì để phản ứng.`,
-      );
+    if (!cleanAnswer) {
+      setErrorMessage('Hãy nhập câu trả lời trước khi gửi.');
       return;
     }
 
@@ -344,8 +343,8 @@ export function OpenRoleplayStage({
 
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="px-2 text-xs font-bold text-[#6b5c43]">Trả lời như đang chat công việc thật.</p>
-                  <button type="button" onClick={onBack} className="rounded-xl border-2 border-[#070a17] bg-[#282d50] px-4 py-2 text-xs font-black text-white shadow-[3px_3px_0_#070a17]">
-                    QUAY LẠI
+                  <button type="button" onClick={() => setScreen('briefing')} className="rounded-xl border-2 border-[#070a17] bg-[#282d50] px-4 py-2 text-xs font-black text-white shadow-[3px_3px_0_#070a17]">
+                    ◀ XEM LẠI GIAO VIỆC
                   </button>
                 </div>
               </div>
@@ -353,6 +352,7 @@ export function OpenRoleplayStage({
           </section>
         </section>
       </div>
+      <CareerDictionaryBubble careerId="it" />
     </main>
   );
 }
