@@ -551,8 +551,12 @@ export function IndustryMiniGamePage({
                 <p className="mt-1 text-sm font-semibold leading-6 text-[#cbd5ff]">{compactText(stage.task.brief, 110)}</p>
               </div>
 
-              <button type="button" onClick={() => setPhase('task')} className="mt-5 rounded-2xl bg-[#ffe066] px-6 py-4 text-base font-black text-[#172033] shadow-[0_16px_32px_rgba(0,0,0,0.28)] transition hover:-translate-y-0.5">
-                BẮT ĐẦU MINI GAME
+              <button
+                type="button"
+                onClick={() => setPhase('task')}
+                className="mt-5 rounded-2xl bg-[#ffe066] px-6 py-4 text-base font-black text-[#172033] shadow-[0_16px_32px_rgba(0,0,0,0.28)] transition hover:-translate-y-0.5"
+              >
+                {taskSubmitted ? 'QUAY LẠI NHIỆM VỤ' : 'BẮT ĐẦU MINI GAME'}
               </button>
             </div>
           </section>
@@ -589,6 +593,19 @@ export function IndustryMiniGamePage({
               onSubmit={submitTask}
               validationMessage={taskValidationMessage}
             />
+
+            {taskSubmitted && (
+              <button
+                type="button"
+                onClick={() => {
+                  setPhase('chat');
+                  setValidationMessage('');
+                }}
+                className="mt-5 w-full rounded-2xl border-2 border-[#070a17] bg-[#7c3aed] px-6 py-4 text-base font-black text-white shadow-[4px_4px_0_#070a17] transition hover:-translate-y-0.5"
+              >
+                TIẾP TỤC ROLEPLAY →
+              </button>
+            )}
           </section>
         )}
 
